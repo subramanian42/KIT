@@ -3,10 +3,8 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import './maps.dart';
+
 import 'package:nearby_connections/nearby_connections.dart';
-//import 'package:image_picker/image_picker.dart';
-//import 'package:location/location.dart';
 
 void main() => runApp(MyApp());
 
@@ -19,9 +17,13 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme:
+          ThemeData(primaryColor: Colors.deepPurple, accentColor: Colors.black),
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Keep In Touch'),
+          centerTitle: true,
         ),
         body: Body(),
       ),
@@ -42,7 +44,7 @@ class _MyBodyState extends State<Body> {
   final options = ['SOS', 'Health Centre', 'Resource Centre', 'Reply'];
   String _option = 'SOS';
   List<String> cId = []; //currently connected device ID
-  File tempFile; //reference to the file currently being transferred
+  late File tempFile; //reference to the file currently being transferred
   Map<int, String> map =
       Map(); //store filename mapped to corresponding payloadId
 
@@ -54,7 +56,7 @@ class _MyBodyState extends State<Body> {
 
   @override
   Widget build(BuildContext context) {
-    TextStyle textStyle = Theme.of(context).textTheme.title;
+    TextStyle? textStyle = Theme.of(context).textTheme.headline6;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -70,9 +72,9 @@ class _MyBodyState extends State<Body> {
                     );
                   }).toList(),
                   value: _option,
-                  onChanged: (String value) {
+                  onChanged: (String? value) {
                     setState(() {
-                      this._option = value;
+                      this._option = value!;
                     });
                   },
                 ),
@@ -90,9 +92,7 @@ class _MyBodyState extends State<Body> {
             Text("User Name: " + userName),
             Wrap(
               children: <Widget>[
-                RaisedButton(
-                  color: Theme.of(context).primaryColorDark,
-                  textColor: Theme.of(context).primaryColorLight,
+                ElevatedButton(
                   child: Text("Start Advertising"),
                   onPressed: () async {
                     try {
@@ -114,9 +114,7 @@ class _MyBodyState extends State<Body> {
                   },
                 ),
                 Container(width: 5.0 * 5),
-                RaisedButton(
-                  color: Theme.of(context).primaryColorDark,
-                  textColor: Theme.of(context).primaryColorLight,
+                ElevatedButton(
                   child: Text("Stop Advertising"),
                   onPressed: () async {
                     await Nearby().stopAdvertising();
@@ -126,9 +124,7 @@ class _MyBodyState extends State<Body> {
             ),
             Wrap(
               children: <Widget>[
-                RaisedButton(
-                  color: Theme.of(context).primaryColorDark,
-                  textColor: Theme.of(context).primaryColorLight,
+                ElevatedButton(
                   child: Text("Start Discovery   "),
                   onPressed: () async {
                     try {
@@ -146,7 +142,7 @@ class _MyBodyState extends State<Body> {
                                     Text("id: " + id),
                                     Text("Name: " + name),
                                     Text("ServiceId: " + serviceId),
-                                    RaisedButton(
+                                    ElevatedButton(
                                       child: Text("Request Connection"),
                                       onPressed: () {
                                         Navigator.pop(context);
@@ -172,7 +168,7 @@ class _MyBodyState extends State<Body> {
                           );
                         },
                         onEndpointLost: (id) {
-                          showSnackbar("Lost Endpoint:" + id);
+                          showSnackbar("Lost Endpoint:" + id!);
                         },
                       );
                       showSnackbar("DISCOVERING: " + a.toString());
@@ -182,9 +178,7 @@ class _MyBodyState extends State<Body> {
                   },
                 ),
                 Container(width: 5.0 * 5),
-                RaisedButton(
-                  color: Theme.of(context).primaryColorDark,
-                  textColor: Theme.of(context).primaryColorLight,
+                ElevatedButton(
                   child: Text("Stop Discovery   "),
                   onPressed: () async {
                     await Nearby().stopDiscovery();
@@ -192,9 +186,7 @@ class _MyBodyState extends State<Body> {
                 ),
               ],
             ),
-            RaisedButton(
-              color: Theme.of(context).primaryColorDark,
-              textColor: Theme.of(context).primaryColorLight,
+            ElevatedButton(
               child: Text("Stop All Endpoints"),
               onPressed: () async {
                 await Nearby().stopAllEndpoints();
@@ -204,9 +196,7 @@ class _MyBodyState extends State<Body> {
             Text(
               "Sending Data",
             ),
-            RaisedButton(
-                color: Theme.of(context).primaryColorDark,
-                textColor: Theme.of(context).primaryColorLight,
+            ElevatedButton(
                 child: Text("Send Message"),
                 onPressed: () async {
                   String a = myController.text;
@@ -224,7 +214,7 @@ class _MyBodyState extends State<Body> {
                         .sendBytesPayload(i, Uint8List.fromList(a.codeUnits));
                   }
                 }),
-            // RaisedButton(
+            // ElevatedButton(
             //   child: Text("Send File Payload"),
             //   onPressed: () async {
             //     File file =
@@ -263,14 +253,16 @@ class _MyBodyState extends State<Body> {
     );
   }
 
+  // ignore: non_constant_identifier_names
   void Go() {}
-  void askLoc() async {
-    await Nearby().askLocationPermission();
+  Future<void> askLoc() async {
+    // ignore: await_only_futures
+    Nearby().askLocationPermission();
   }
 
   void checkloc() async {
     if (await Nearby().checkLocationPermission()) {
-      Scaffold.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Location permissions granted :)")));
     } else {
       askLoc();
@@ -279,12 +271,13 @@ class _MyBodyState extends State<Body> {
   }
 
   void askExt() async {
-    await Nearby().askExternalStoragePermission();
+    // ignore: await_only_futures
+    Nearby().askExternalStoragePermission();
   }
 
   void checkext() async {
     if (await Nearby().checkExternalStoragePermission()) {
-      Scaffold.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("External Storage permissions granted :)")));
     } else {
       askExt();
@@ -292,25 +285,25 @@ class _MyBodyState extends State<Body> {
   }
 
   void showSnackbar(dynamic a) {
-    Scaffold.of(context).showSnackBar(SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(a.toString()),
     ));
   }
 
   /// Called upon Connection request (on both devices)
   /// Both need to accept connection to start sending/receiving
-  void onConnectionInit(String id, ConnectionInfo info) {
+  void onConnectionInit(String? id, ConnectionInfo info) {
     showModalBottomSheet(
       context: context,
       builder: (builder) {
         return Center(
           child: Column(
             children: <Widget>[
-              Text("id: " + id),
-              Text("Token: " + info.authenticationToken),
-              Text("Name" + info.endpointName),
+              Text("id: " + id!),
+              Text("Token: " + info.authenticationToken!),
+              Text("Name" + info.endpointName!),
               Text("Incoming: " + info.isIncomingConnection.toString()),
-              RaisedButton(
+              ElevatedButton(
                 child: Text("Accept Connection"),
                 onPressed: () {
                   Navigator.pop(context);
@@ -322,7 +315,7 @@ class _MyBodyState extends State<Body> {
                     id,
                     onPayLoadRecieved: (endid, payload) async {
                       if (payload.type == PayloadType.BYTES) {
-                        String str = String.fromCharCodes(payload.bytes);
+                        String str = String.fromCharCodes(payload.bytes!);
                         showSnackbar(endid + ": " + str);
                         setState(() {
                           if (!msg.contains(str)) {
@@ -355,12 +348,12 @@ class _MyBodyState extends State<Body> {
                         }
                       } else if (payload.type == PayloadType.FILE) {
                         showSnackbar(endid + ": File transfer started");
-                        tempFile = File(payload.filePath);
+                        tempFile = File(payload.filePath!);
                       }
                     },
                     onPayloadTransferUpdate: (endid, payloadTransferUpdate) {
                       if (payloadTransferUpdate.status ==
-                          PayloadStatus.IN_PROGRRESS) {
+                          PayloadStatus.IN_PROGRESS) {
                         print(payloadTransferUpdate.bytesTransferred);
                       } else if (payloadTransferUpdate.status ==
                           PayloadStatus.FAILURE) {
@@ -373,18 +366,18 @@ class _MyBodyState extends State<Body> {
 
                         if (map.containsKey(payloadTransferUpdate.id)) {
                           //rename the file now
-                          String name = map[payloadTransferUpdate.id];
-                          tempFile.rename(tempFile.parent.path + "/" + name);
+                          String? name = map[payloadTransferUpdate.id];
+                          tempFile.rename(tempFile.parent.path + "/" + name!);
                         } else {
                           //bytes not received till yet
-                          map[payloadTransferUpdate.id] = "";
+                          map[payloadTransferUpdate.id!] = "";
                         }
                       }
                     },
                   );
                 },
               ),
-              RaisedButton(
+              ElevatedButton(
                 child: Text("Reject Connection"),
                 onPressed: () async {
                   Navigator.pop(context);
