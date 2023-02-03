@@ -18,8 +18,10 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme:
-          ThemeData(primaryColor: Colors.deepPurple, accentColor: Colors.black),
+      theme: ThemeData(
+        primaryColor: Colors.deepPurple,
+        colorScheme: ColorScheme.light(secondary: Colors.black),
+      ),
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Keep In Touch'),
